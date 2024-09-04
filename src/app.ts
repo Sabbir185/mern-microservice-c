@@ -1,13 +1,15 @@
 import express, { NextFunction, Request, Response } from "express";
 import logger from "./config/logger";
 import { HttpError } from "http-errors";
+import blogRouter from "./routes/blog";
 
 const app = express();
 
 app.get("/", (req, res) => {
-    const result = `<p style="text-align: center; margin-top: 10%">"Hello, Welcome to dockerize...!"</p>`
-    res.status(200).send(result);
+    res.status(200).send("Hello, Welcome to blog");
 });
+
+app.use("/posts", blogRouter);
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
