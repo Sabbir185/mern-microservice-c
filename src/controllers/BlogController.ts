@@ -13,9 +13,11 @@ export class BlogController {
         const { body } = req;
         const filePath = process.cwd() + "/public/blogs.txt";
         const rand = numberGen(10000);
+        // missing fields checking
         if (!body?.title || !body?.content) {
             return res.status(404).send();
         }
+        // too short and too long, validation checking
         const blogTitle = body?.title?.length < 5 || body?.title?.length > 20;
         const blogContent =
             body?.content?.length < 10 || body?.content?.length > 30;
