@@ -5,6 +5,9 @@ import blogRouter from "./routes/blog";
 
 const app = express();
 
+// middleware
+app.use(express.json());
+
 app.get("/", (req, res) => {
     res.status(200).send("Hello, Welcome to blog");
 });
