@@ -1,21 +1,41 @@
-import app from "./app";
-import { Config } from "./config";
-import logger from "./config/logger";
+import mongoose from "mongoose";
+import config from './app/config';
+import { server } from './app';
+import { redisClientFunc } from "./redisClient";
 
-const startServer = async () => {
-    const PORT = Config.PORT;
+async function main() {
     try {
-        app.listen(PORT, () => {
-            logger.info(`Server running on port ${PORT}`);
+        const DB_String = config.node_env === 'production' ? config.db_string : config.dev_db_string;
+        await mongoose.connect(DB_String as string);
+        console.log('Database connected successfully!');
+
+        const PORT = config.node_env === 'production'? config.port : config.dev_port;
+        server.listen(PORT, () => {
+            console.log(`App is listening on port ${PORT}`);
         });
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            logger.error(error.message);
-            setTimeout(() => {
-                process.exit(1);
-            }, 1000);
-        }
-    }
+
+        // redis connection
+        await redisClientFunc()
+    } catch (err) {
+        console.log(err);
+    };
 };
 
-startServer();
+main();
+
+process.on('unhandledRejection', (err: Record<string, unknown>) => {
+    console.log(`unhandledRejection is detected , shutting down ...`);
+    console.log(err.name, err.message);
+    if (server) {
+        server.close(() => {
+            process.exit(1);
+        });
+    }
+    process.exit(1);
+});
+
+process.on('uncaughtException', (err: Record<string, unknown>) => {
+    console.log(`uncaughtException is detected , shutting down ...`);
+    console.log(err.name, err.message);
+    process.exit(1);
+});
